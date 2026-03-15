@@ -7,6 +7,7 @@ vim.o.mouse = 'a'
 vim.o.showmode = false
 vim.schedule(function() vim.o.clipboard = 'unnamedplus' end)
 vim.o.breakindent = true
+vim.o.smartindent = true
 vim.o.undofile = true
 vim.o.ignorecase = true
 vim.o.smartcase = true
@@ -44,6 +45,7 @@ vim.keymap.set('n', '<C-S-h>', '<C-w>H', { desc = 'Move window to the left' })
 vim.keymap.set('n', '<C-S-l>', '<C-w>L', { desc = 'Move window to the right' })
 vim.keymap.set('n', '<C-S-j>', '<C-w>J', { desc = 'Move window to the lower' })
 vim.keymap.set('n', '<C-S-k>', '<C-w>K', { desc = 'Move window to the upper' })
+vim.keymap.set('n', '<leader>w', ':bd<CR>', { desc = 'Close current buffer' })
 
 vim.api.nvim_create_autocmd('TextYankPost', {
   desc = 'Highlight when yanking (copying) text',
@@ -63,7 +65,7 @@ local rtp = vim.opt.rtp
 rtp:prepend(lazypath)
 
 require('lazy').setup({
-  { 'NMAC427/guess-indent.nvim', opts = {} },
+  { 'NMAC427/guess-indent.nvim', config = function() require('guess-indent').setup {} end },
 
   {
     'lewis6991/gitsigns.nvim',
@@ -331,15 +333,10 @@ require('lazy').setup({
           return 'make install_jsregexp'
         end)(),
         dependencies = {
-          -- `friendly-snippets` contains a variety of premade snippets.
-          --    See the README about individual language/framework/plugin snippets:
-          --    https://github.com/rafamadriz/friendly-snippets
-          -- {
-          --   'rafamadriz/friendly-snippets',
-          --   config = function()
-          --     require('luasnip.loaders.from_vscode').lazy_load()
-          --   end,
-          -- },
+          {
+            'rafamadriz/friendly-snippets',
+            config = function() require('luasnip.loaders.from_vscode').lazy_load() end,
+          },
         },
         opts = {},
       },
@@ -349,6 +346,9 @@ require('lazy').setup({
     opts = {
       keymap = {
         preset = 'default',
+        ['<Tab>'] = { 'select_next', 'fallback' },
+        ['<S-Tab>'] = { 'select_prev', 'fallback' },
+        ['<Enter>'] = { 'accept', 'fallback' },
       },
 
       appearance = {
@@ -356,7 +356,7 @@ require('lazy').setup({
       },
 
       completion = {
-        documentation = { auto_show = false, auto_show_delay_ms = 500 },
+        documentation = { auto_show = false, auto_show_delay_ms = 200 },
       },
 
       sources = {
@@ -411,7 +411,7 @@ require('lazy').setup({
     build = ':TSUpdate',
     branch = 'main',
     config = function()
-      local parsers = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' }
+      local parsers = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc', 'rust', 'cpp', 'python' }
       require('nvim-treesitter').install(parsers)
       vim.api.nvim_create_autocmd('FileType', {
         callback = function(args)
@@ -423,7 +423,7 @@ require('lazy').setup({
           if not vim.treesitter.language.add(language) then return end
 
           vim.treesitter.start(buf, language)
-          vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+          -- vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
         end,
       })
     end,
@@ -431,7 +431,7 @@ require('lazy').setup({
 
   {
     'sindrets/diffview.nvim',
-    opts = {},
+    config = function() end,
   },
 
   -- require 'kickstart.plugins.debug',
@@ -439,6 +439,7 @@ require('lazy').setup({
   -- require 'kickstart.plugins.lint',
   require 'kickstart.plugins.autopairs',
   require 'kickstart.plugins.neo-tree',
+
   -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
 }, { ---@diagnostic disable-line: missing-fields
   ui = {
@@ -459,5 +460,17 @@ require('lazy').setup({
     },
   },
 })
+
+local function toggle_diffview()
+  local diffview = require 'diffview'
+  local view_open = require('diffview.lib').get_current_view()
+  if view_open then
+    diffview.close()
+  else
+    diffview.open()
+  end
+end
+
+vim.keymap.set('n', '<leader>d', toggle_diffview, { noremap = true, silent = true })
 
 -- vim: ts=2 sts=2 sw=2 et
