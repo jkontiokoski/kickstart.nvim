@@ -28,6 +28,7 @@ require('lazy').setup({
   require 'custom.plugins.nvim-treesitter',
   require 'custom.plugins.render-markdown',
   require 'custom.plugins.oil',
+  require 'custom.plugins.neogit',
 }, { ---@diagnostic disable-line: missing-fields
   ui = {
     icons = vim.g.have_nerd_font and {} or {
