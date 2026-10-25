@@ -23,6 +23,4 @@ return {
       { '<leader>gg', '<cmd>Neogit<cr>', desc = 'Show Neogit UI' },
     },
   },
-
-  vim.keymap.set('n', '<leader>g', '<cmd>Neogit<cr>"', { desc = 'Git' }),
 }
